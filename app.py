@@ -29,4 +29,12 @@ selected_countries = st.sidebar.multiselect(
     options=country_options,
     default=["China", "India", "Nigeria", "United States of America"]
 )
+# Filterig the data based on sidebar selections
+indicator_df = df[df["SeriesDescription"] == selected_indicator]
+year_df = indicator_df[indicator_df["TimePeriod"] == selected_year]
 
+#aggregation fix
+df = df.groupby(
+    ["SeriesDescription", "GeoAreaCode", "GeoAreaName", "TimePeriod"],
+    as_index=False
+)["Value"].mean()
