@@ -12,3 +12,21 @@ df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 df = df.dropna(subset=["Value"])
 
 st.write(df.head())
+
+# Sidebar filters
+st.sidebar.title("Filters")
+
+indicator_options = df["SeriesDescription"].unique().tolist()
+selected_indicator = st.sidebar.selectbox("Select Indicator", indicator_options)
+
+min_year = int(df["TimePeriod"].min())
+max_year = int(df["TimePeriod"].max())
+selected_year = st.sidebar.slider("Select Year", min_year, max_year, max_year)
+
+country_options = sorted(df["GeoAreaName"].unique().tolist())
+selected_countries = st.sidebar.multiselect(
+    "Select Countries (for trend chart)",
+    options=country_options,
+    default=["China", "India", "Nigeria", "United States of America"]
+)
+
