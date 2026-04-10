@@ -38,3 +38,25 @@ df = df.groupby(
     ["SeriesDescription", "GeoAreaCode", "GeoAreaName", "TimePeriod"],
     as_index=False
 )["Value"].mean()
+
+# Key metrics row
+st.subheader(f"Key Stats for {selected_year}")
+
+col1, col2, col3 = st.columns(3)
+
+world_data = year_df[year_df["GeoAreaName"] == "World"]
+if not world_data.empty:
+    global_val = round(world_data["Value"].values[0], 1)
+    col1.metric("Global Average", global_val)
+else:
+    col1.metric("Global Average", "No data")
+
+countries_only = year_df[year_df["GeoAreaCode"] < 900]
+if not countries_only.empty:
+    highest = countries_only.loc[countries_only["Value"].idxmax()]
+    col2.metric("Highest Country", highest["GeoAreaName"], round(highest["Value"], 1))
+
+    lowest = countries_only.loc[countries_only["Value"].idxmin()]
+    col3.metric("Lowest Country", lowest["GeoAreaName"], round(lowest["Value"], 1), delta_color="inverse")
+
+st.divider()
