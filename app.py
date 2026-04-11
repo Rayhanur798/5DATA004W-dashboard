@@ -95,6 +95,7 @@ with col_map:
 
     # Display the map in the app
     st.plotly_chart(fig_map, use_container_width=True)
+    st.caption("Darker blue indicates higher values. Hover over a country to see its exact value.")
 
 with col_line:
     # Subheading for the line chart section
@@ -125,6 +126,7 @@ with col_line:
 
         # Display the chart
         st.plotly_chart(fig_line, use_container_width=True)
+        st.caption("Select countries in the sidebar to compare how they have progressed over time.")
 
     else:
         # Show a message if no countries are selected
@@ -162,6 +164,7 @@ fig_bar.update_layout(
 
 # Display the chart
 st.plotly_chart(fig_bar, use_container_width=True)
+st.caption("These are the countries that need the most attention for global sustainability goals.")
 
 st.divider()
 
