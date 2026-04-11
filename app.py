@@ -17,8 +17,6 @@ df = df.groupby(
     as_index=False
 )["Value"].mean()
 
-st.write(df.head())
-
 # Sidebar filters
 st.sidebar.title("Filters")
 
@@ -133,3 +131,39 @@ with col_line:
         st.info("Please select at least one country in the sidebar.")
 
 st.divider()
+
+# Bottom 10 countries bar chart
+st.subheader(f"Bottom 10 Countries — {selected_year}")
+
+# Only use real countries, filter out regional groupings
+bar_df = year_df[year_df["GeoAreaCode"] < 900]
+
+# Get the 10 countries with the lowest values
+bottom10 = bar_df.nsmallest(10, "Value")
+
+# Create the horizontal bar chart
+fig_bar = px.bar(
+    bottom10,
+    x="Value",          # value on the x axis
+    y="GeoAreaName",    # country name on the y axis
+    orientation="h",    # horizontal bars
+    title=f"Bottom 10 Countries — {selected_year}",
+    labels={"Value": "Value", "GeoAreaName": "Country"},
+    color_discrete_sequence=["#1f77b4"]  # single solid blue colour
+)
+
+# Sort bars so lowest is at the bottom
+fig_bar.update_layout(
+    yaxis={"categoryorder": "total ascending"},
+    paper_bgcolor="rgba(0,0,0,0)", # transparent background
+    margin=dict(t=40, b=0, l=0, r=0),
+    showlegend=False
+)
+
+# Display the chart
+st.plotly_chart(fig_bar, use_container_width=True)
+
+st.divider()
+
+# Footer
+st.caption("Data source: UN SDG Global Database | Goal 7: Affordable and Clean Energy")
