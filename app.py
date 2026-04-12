@@ -20,8 +20,36 @@ df = df.groupby(
 # Sidebar filters
 st.sidebar.title("Filters")
 
-indicator_options = df["SeriesDescription"].unique().tolist()
-selected_indicator = st.sidebar.selectbox("Select Indicator", indicator_options)
+# Dictionary mapping long names to short labels
+indicator_labels = {
+    "Proportion of population with access to electricity, by urban/rural (%)": "Access to Electricity (%)",
+    "Proportion of population with primary reliance on clean fuels and technology (%)": "Clean Fuels Access (%)",
+    "Renewable energy share in the total final energy consumption (%)": "Renewable Energy Share (%)",
+    "Energy intensity level of primary energy (megajoules per constant 2021 purchasing power parity GDP)": "Energy Intensity (MJ per GDP)",
+    "International financial flows to developing countries in support of clean energy research and development and renewable energy production, including in hybrid systems (millions of constant 2023 United States dollars)": "Financial Flows to Clean Energy ($M)",
+    "Installed renewable electricity-generating capacity (watts per capita)": "Installed Renewable Capacity (W per capita)",
+}
+
+
+# Show short labels in the dropdown
+selected_label = st.sidebar.selectbox("Select Indicator", list(indicator_labels.values()))
+
+# Get the full name to filter the data with
+selected_indicator = [k for k, v in indicator_labels.items() if v == selected_label][0]
+
+# Description for each indicator
+indicator_descriptions = {
+    "Proportion of population with access to electricity, by urban/rural (%)": "Track the percentage of population with access to electricity across 284 countries from 2000 to 2024. Sub-Saharan Africa remains the most underserved region.",
+    "Proportion of population with primary reliance on clean fuels and technology (%)": "Explore how many people rely on clean fuels for cooking and heating. Access to clean fuels is a key factor in reducing indoor air pollution.",
+    "Renewable energy share in the total final energy consumption (%)": "See what proportion of energy consumption comes from renewable sources. Higher values indicate a cleaner energy mix.",
+    "Energy intensity level of primary energy (megajoules per constant 2021 purchasing power parity GDP)": "Energy intensity measures how efficiently energy is used in an economy. Lower values mean more economic output per unit of energy.",
+    "International financial flows to developing countries in support of clean energy research and development and renewable energy production, including in hybrid systems (millions of constant 2023 United States dollars)": "Track financial support flowing to developing countries for clean energy. Shows global commitment to sustainable energy transition.",
+    "Installed renewable electricity-generating capacity (watts per capita)": "Measures installed renewable energy capacity per person. Higher values indicate greater investment in renewable infrastructure.",
+}
+
+# Show the description for the selected indicator
+st.info(indicator_descriptions[selected_indicator])
+
 
 min_year = int(df["TimePeriod"].min())
 max_year = int(df["TimePeriod"].max())
