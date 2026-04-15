@@ -17,7 +17,9 @@ df = df.groupby(
     as_index=False
 )["Value"].mean()
 
-# Sidebar filters
+# -----------------------------------------------
+# SIDEBAR FILTERS
+# -----------------------------------------------
 st.sidebar.title("Filters")
 
 # Dictionary mapping long names to short labels
@@ -30,12 +32,28 @@ indicator_labels = {
     "Installed renewable electricity-generating capacity (watts per capita)": "Installed Renewable Capacity (W per capita)",
 }
 
-
 # Show short labels in the dropdown
 selected_label = st.sidebar.selectbox("Select Indicator", list(indicator_labels.values()))
 
 # Get the full name to filter the data with
 selected_indicator = [k for k, v in indicator_labels.items() if v == selected_label][0]
+
+# Slider to pick a year
+min_year = int(df["TimePeriod"].min())
+max_year = int(df["TimePeriod"].max())
+selected_year = st.sidebar.slider("Select Year", min_year, max_year, max_year)
+
+# Multiselect to pick countries for the line chart
+country_options = sorted(df["GeoAreaName"].unique().tolist())
+selected_countries = st.sidebar.multiselect(
+    "Select Countries (for trend chart)",
+    options=country_options,
+    default=["China", "India", "Nigeria", "United States of America"]
+)
+
+# -----------------------------------------------
+# INDICATOR DESCRIPTION
+# -----------------------------------------------
 
 # Description for each indicator
 indicator_descriptions = {
@@ -50,23 +68,19 @@ indicator_descriptions = {
 # Show the description for the selected indicator
 st.info(indicator_descriptions[selected_indicator])
 
+# -----------------------------------------------
+# FILTER THE DATA
+# -----------------------------------------------
 
-min_year = int(df["TimePeriod"].min())
-max_year = int(df["TimePeriod"].max())
-selected_year = st.sidebar.slider("Select Year", min_year, max_year, max_year)
-
-country_options = sorted(df["GeoAreaName"].unique().tolist())
-selected_countries = st.sidebar.multiselect(
-    "Select Countries (for trend chart)",
-    options=country_options,
-    default=["China", "India", "Nigeria", "United States of America"]
-)
-
-# Filtering the data based on sidebar selections
+# Filter by the chosen indicator
 indicator_df = df[df["SeriesDescription"] == selected_indicator]
+
+# Filter by the chosen year
 year_df = indicator_df[indicator_df["TimePeriod"] == selected_year]
 
-# Key metrics
+# -----------------------------------------------
+# KEY METRICS ROW
+# -----------------------------------------------
 st.subheader(f"Key Stats for {selected_year}")
 
 # Splits the page into 3 equal columns side by side
@@ -92,7 +106,9 @@ if not countries_only.empty:
 # Just draws a horizontal line to separate sections
 st.divider()
 
-# Split the page into 2 columns — map on the left, line chart on the right
+# -----------------------------------------------
+# MAP + LINE CHART (side by side)
+# -----------------------------------------------
 col_map, col_line = st.columns(2)
 
 with col_map:
@@ -124,6 +140,7 @@ with col_map:
     # Display the map in the app
     st.plotly_chart(fig_map, use_container_width=True)
     st.caption("Darker blue indicates higher values. Hover over a country to see its exact value.")
+    st.caption("NOTE: Some countries may appear blank due to limited data availability in the UN SDG database.")
 
 with col_line:
     # Subheading for the line chart section
@@ -162,39 +179,79 @@ with col_line:
 
 st.divider()
 
-# Bottom 10 countries bar chart
-st.subheader(f"Bottom 10 Countries — {selected_year}")
+# -----------------------------------------------
+# BOTTOM 10 + GLOBAL TREND (side by side)
+# -----------------------------------------------
+col_bar, col_global = st.columns(2)
 
-# Only use real countries, filter out regional groupings
-bar_df = year_df[year_df["GeoAreaCode"] < 900]
+with col_bar:
+    # Bottom 10 countries bar chart
+    st.subheader(f"Bottom 10 Countries — {selected_year}")
 
-# Get the 10 countries with the lowest values
-bottom10 = bar_df.nsmallest(10, "Value")
+    # Only use real countries, filter out regional groupings
+    bar_df = year_df[year_df["GeoAreaCode"] < 900]
 
-# Create the horizontal bar chart
-fig_bar = px.bar(
-    bottom10,
-    x="Value",          # value on the x axis
-    y="GeoAreaName",    # country name on the y axis
-    orientation="h",    # horizontal bars
-    title=f"Bottom 10 Countries — {selected_year}",
-    labels={"Value": "Value", "GeoAreaName": "Country"},
-    color_discrete_sequence=["#1f77b4"]  # single solid blue colour
-)
+    # Get the 10 countries with the lowest values
+    bottom10 = bar_df.nsmallest(10, "Value")
 
-# Sort bars so lowest is at the bottom
-fig_bar.update_layout(
-    yaxis={"categoryorder": "total ascending"},
-    paper_bgcolor="rgba(0,0,0,0)", # transparent background
-    margin=dict(t=40, b=0, l=0, r=0),
-    showlegend=False
-)
+    # Create the horizontal bar chart
+    fig_bar = px.bar(
+        bottom10,
+        x="Value",          # value on the x axis
+        y="GeoAreaName",    # country name on the y axis
+        orientation="h",    # horizontal bars
+        title=f"Bottom 10 Countries — {selected_year}",
+        labels={"Value": "Value", "GeoAreaName": "Country"},
+        color_discrete_sequence=["#1f77b4"]  # single solid blue colour
+    )
 
-# Display the chart
-st.plotly_chart(fig_bar, use_container_width=True)
-st.caption("These are the countries that need the most attention for global sustainability goals.")
+    # Sort bars so lowest is at the bottom
+    fig_bar.update_layout(
+        yaxis={"categoryorder": "total ascending"},
+        paper_bgcolor="rgba(0,0,0,0)", # transparent background
+        margin=dict(t=40, b=0, l=0, r=0),
+        showlegend=False
+    )
+
+    # Display the chart
+    st.plotly_chart(fig_bar, use_container_width=True)
+    st.caption("These are the countries that need the most attention for global sustainability goals.")
+
+with col_global:
+    # Global trend chart — shows world average over time for selected indicator
+    st.subheader("Global Trend Over Time")
+
+    # Filter to only the World row for the selected indicator
+    global_trend = indicator_df[indicator_df["GeoAreaName"] == "World"]
+
+    # Only show if world data exists for this indicator
+    if not global_trend.empty:
+        fig_global = px.line(
+            global_trend,
+            x="TimePeriod",    # year on x axis
+            y="Value",         # value on y axis
+            markers=True,      # show dots on each data point
+            title=f"Global Average — {selected_label}",
+            labels={"TimePeriod": "Year", "Value": "Value"}
+        )
+
+        # Clean up layout
+        fig_global.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)", # transparent background
+            margin=dict(t=40, b=0, l=0, r=0),
+            yaxis_title=""
+        )
+
+        # Display the chart
+        st.plotly_chart(fig_global, use_container_width=True)
+        st.caption("This chart shows the global average progress over time. An upward trend indicates worldwide improvement.")
+
+    else:
+        st.info("No global average data available for this indicator.")
 
 st.divider()
 
-# Footer
+# -----------------------------------------------
+# FOOTER
+# -----------------------------------------------
 st.caption("Data source: UN SDG Global Database | Goal 7: Affordable and Clean Energy")
