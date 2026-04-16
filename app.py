@@ -17,9 +17,8 @@ df = df.groupby(
     as_index=False
 )["Value"].mean()
 
-# -----------------------------------------------
+
 # SIDEBAR FILTERS
-# -----------------------------------------------
 st.sidebar.title("Filters")
 
 # Dictionary mapping long names to short labels
@@ -28,8 +27,8 @@ indicator_labels = {
     "Proportion of population with primary reliance on clean fuels and technology (%)": "Clean Fuels Access (%)",
     "Renewable energy share in the total final energy consumption (%)": "Renewable Energy Share (%)",
     "Energy intensity level of primary energy (megajoules per constant 2021 purchasing power parity GDP)": "Energy Intensity (MJ per GDP)",
-    "International financial flows to developing countries in support of clean energy research and development and renewable energy production, including in hybrid systems (millions of constant 2023 United States dollars)": "Financial Flows to Clean Energy ($M)",
-    "Installed renewable electricity-generating capacity (watts per capita)": "Installed Renewable Capacity (W per capita)",
+    "International financial flows to developing countries in support of clean energy research and development and renewable energy production, including in hybrid systems (millions of constant 2023 United States dollars)": "Financial Flows to Clean Energy ($M)"
+    
 }
 
 # Show short labels in the dropdown
@@ -50,10 +49,7 @@ selected_countries = st.sidebar.multiselect(
     options=country_options,
     default=["China", "India", "Nigeria", "United States of America"]
 )
-
-# -----------------------------------------------
 # INDICATOR DESCRIPTION
-# -----------------------------------------------
 
 # Description for each indicator
 indicator_descriptions = {
@@ -61,16 +57,15 @@ indicator_descriptions = {
     "Proportion of population with primary reliance on clean fuels and technology (%)": "Explore how many people rely on clean fuels for cooking and heating. Access to clean fuels is a key factor in reducing indoor air pollution.",
     "Renewable energy share in the total final energy consumption (%)": "See what proportion of energy consumption comes from renewable sources. Higher values indicate a cleaner energy mix.",
     "Energy intensity level of primary energy (megajoules per constant 2021 purchasing power parity GDP)": "Energy intensity measures how efficiently energy is used in an economy. Lower values mean more economic output per unit of energy.",
-    "International financial flows to developing countries in support of clean energy research and development and renewable energy production, including in hybrid systems (millions of constant 2023 United States dollars)": "Track financial support flowing to developing countries for clean energy. Shows global commitment to sustainable energy transition.",
-    "Installed renewable electricity-generating capacity (watts per capita)": "Measures installed renewable energy capacity per person. Higher values indicate greater investment in renewable infrastructure.",
+    "International financial flows to developing countries in support of clean energy research and development and renewable energy production, including in hybrid systems (millions of constant 2023 United States dollars)": "Track financial support flowing to developing countries for clean energy. Shows global commitment to sustainable energy transition."
+   
 }
 
 # Show the description for the selected indicator
 st.info(indicator_descriptions[selected_indicator])
 
-# -----------------------------------------------
-# FILTER THE DATA
-# -----------------------------------------------
+
+# FILTER THE DATA:
 
 # Filter by the chosen indicator
 indicator_df = df[df["SeriesDescription"] == selected_indicator]
@@ -78,9 +73,7 @@ indicator_df = df[df["SeriesDescription"] == selected_indicator]
 # Filter by the chosen year
 year_df = indicator_df[indicator_df["TimePeriod"] == selected_year]
 
-# -----------------------------------------------
 # KEY METRICS ROW
-# -----------------------------------------------
 st.subheader(f"Key Stats for {selected_year}")
 
 # Splits the page into 3 equal columns side by side
@@ -106,9 +99,8 @@ if not countries_only.empty:
 # Just draws a horizontal line to separate sections
 st.divider()
 
-# -----------------------------------------------
+
 # MAP + LINE CHART (side by side)
-# -----------------------------------------------
 col_map, col_line = st.columns(2)
 
 with col_map:
@@ -166,7 +158,7 @@ with col_line:
         fig_line.update_layout(
             paper_bgcolor="rgba(0,0,0,0)", # transparent background
             margin=dict(t=40, b=0, l=0, r=0),
-            yaxis_title=""                 # remove y axis label to avoid overlap
+            yaxis_title=""               # remove y axis label to avoid overlap
         )
 
         # Display the chart
@@ -179,9 +171,8 @@ with col_line:
 
 st.divider()
 
-# -----------------------------------------------
-# BOTTOM 10 + GLOBAL TREND (side by side)
-# -----------------------------------------------
+
+# BOTTOM 10 + GLOBAL TREND(side by side)
 col_bar, col_global = st.columns(2)
 
 with col_bar:
@@ -191,7 +182,6 @@ with col_bar:
     # Only use real countries, filter out regional groupings
     bar_df = year_df[year_df["GeoAreaCode"] < 900]
 
-    # Get the 10 countries with the lowest values
     bottom10 = bar_df.nsmallest(10, "Value")
 
     # Create the horizontal bar chart
@@ -251,7 +241,5 @@ with col_global:
 
 st.divider()
 
-# -----------------------------------------------
 # FOOTER
-# -----------------------------------------------
 st.caption("Data source: UN SDG Global Database | Goal 7: Affordable and Clean Energy")
