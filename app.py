@@ -142,10 +142,10 @@ with col_line:
         # Create the line chart using plotly
         fig_line = px.line(
             trend_df,
-            x="TimePeriod",       # year on the x axis
-            y="Value",            # indicator value on the y axis
-            color="GeoAreaName",  # different colour line for each country
-            markers=True,         # show dots on each data point
+            x="TimePeriod",       
+            y="Value",           
+            color="GeoAreaName",  
+            markers=True,        
             title="Trend by Country",
             labels={"TimePeriod": "Year", "Value": "Value", "GeoAreaName": "Country"}
         )
@@ -183,9 +183,9 @@ with col_bar:
     # Create the horizontal bar chart
     fig_bar = px.bar(
         bottom10,
-        x="Value",          # value on the x axis
-        y="GeoAreaName",    # country name on the y axis
-        orientation="h",    # horizontal bars
+        x="Value",          
+        y="GeoAreaName",    
+        orientation="h",    
         title=f"Bottom 10 Countries — {selected_year}",
         labels={"Value": "Value", "GeoAreaName": "Country"},
         color_discrete_sequence=["#1f77b4"]  # single solid blue colour
@@ -214,9 +214,9 @@ with col_global:
     if not global_trend.empty:
         fig_global = px.line(
             global_trend,
-            x="TimePeriod",    # year on x axis
-            y="Value",         # value on y axis
-            markers=True,      # show dots on each data point
+            x="TimePeriod",    
+            y="Value",         
+            markers=True,      
             title=f"Global Average — {selected_label}",
             labels={"TimePeriod": "Year", "Value": "Value"}
         )
